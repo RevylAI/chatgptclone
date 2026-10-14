@@ -59,3 +59,16 @@ Apps, Codex, external services, actual audio/AI generation, collaboration, and p
 The development workspace used 384 source screens and their ZIP under `references/`. These reference files and comparison composites are excluded from the public repository. Source: the [requested Mobbin version](https://mobbin.com/apps/chat-gpt-ios-a96b7f4c-6bfa-4c9d-a6b7-562160feb391/a0b14f48-3d1c-4286-828b-e95ad04fef10/screens).
 
 The existing Revyl app association and cloud build recipe are preserved in `.revyl/config.yaml`. Three historical test definitions are in `.revyl/tests/`. Per the current workflow preference, do not create or run persisted tests; use Revyl CLI device interaction and validation commands. See `evidence/verification.md` for exact build identity, checks, and remaining work.
+
+
+## Revyl GitHub integration
+
+The Revyl GitHub App has access to [`RevylAI/chatgptclone`](https://github.com/RevylAI/chatgptclone). Pull request review is enabled for the repository root in `.revyl/config.yaml`:
+
+- Builds use Revyl's `development` profile and the existing iOS app association.
+- Proof of changes is enabled using the Revyl harness.
+- The configuration is committed on the default branch so Git can own the project settings.
+
+Inspect the connection with `revyl github status --json` and validate configuration changes with `revyl config validate`. Integration setup was verified through those commands; no pull request review run was triggered as part of publication.
+
+Forks need their own Revyl authentication, project/app association, and GitHub App access before using cloud builds or PR review. The repository contains no Revyl API credentials.

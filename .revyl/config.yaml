@@ -11,3 +11,11 @@ build:
                 build_commands:
                     - xcodebuild -project ChatGPTDemo.xcodeproj -scheme 'ChatGPTDemo' -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build
                 output_path: build/Build/Products/Debug-iphonesimulator/*.app
+pr_review:
+    build:
+        kind: revyl
+        profile: development
+    proof_of_changes:
+        enabled: true
+        harness:
+            kind: revyl
