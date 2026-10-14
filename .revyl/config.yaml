@@ -16,6 +16,6 @@ pr_review:
         kind: revyl
         profile: development
     proof_of_changes:
-        enabled: true
+        enabled: false
         harness:
             kind: revyl
