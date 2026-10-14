@@ -1,0 +1,8 @@
+PASS explicit launch-variable bypass and default guest
+PASS local authentication and chat persistence across relaunch
+PASS temporary chat excluded from durable state
+PASS project association, archive, restore and project deletion
+PASS source contents persist, duplicate titles, editing and deletion
+PASS existing project state migrates without losing data
+PASS reset token is idempotent across relaunch
+PASS launch argument fallback

@@ -1,0 +1,38 @@
+# Revyl Test Definition
+
+_meta:
+    remote_id: 8304de61-0dd7-42f0-ba0f-413c50d5c905
+    remote_version: 1
+    local_version: 1
+    last_synced_at: "2026-10-14T15:27:10-07:00"
+    checksum: 5f7860934132ecd67990c6d0f5e5abd89e7a2e811cded96e77bf22882571cb17
+test:
+    metadata:
+        name: chatgpt-swift-main-auth-chat-20261014
+        platform: ios
+    build:
+        name: ChatGPT Swift Demo 20261014
+    blocks:
+        - type: validation
+          step_description: The welcome screen displays Welcome to ChatGPT and a Continue button.
+        - type: instructions
+          step_description: Continue past the welcome screen. Tap Sign up on the chat screen, then Log in on the sign-in options screen. Log in using demo@example.com and the local demo password demo123456. When asked for a verification code enter 123456 and continue.
+        - type: validation
+          step_description: The chat screen is visible with the Ask ChatGPT composer, the sidebar button, and no Sign up button. No authentication sheet remains.
+        - type: instructions
+          step_description: Send the message Help me create a cafe mocha recipe.
+        - type: validation
+          step_description: The conversation shows a Cafe Mocha Recipe answer with recipe instructions or Easy Variations and Pro Tips.
+        - type: instructions
+          step_description: Open the chat menu at the top right and rename this chat to Morning Coffee. Open the sidebar and find Morning Coffee in Recents.
+        - type: validation
+          step_description: Morning Coffee appears in the sidebar chat history.
+        - type: manual
+          step_type: kill_app
+        - type: manual
+          step_type: open_app
+          step_description: ai.revyl.demo.chatgpt
+        - type: instructions
+          step_description: Open the sidebar if needed.
+        - type: validation
+          step_description: Morning Coffee is still in the chat history after relaunch. The profile avatar opens Settings, indicating the local sign-in persisted.

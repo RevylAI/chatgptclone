@@ -1,0 +1,43 @@
+# Revyl Test Definition
+
+_meta:
+    remote_id: d6f07651-f4a8-4c91-b59d-2a47fb169024
+    remote_version: 1
+    local_version: 1
+    last_synced_at: "2026-10-14T15:27:21-07:00"
+    checksum: da8dedae30f57cc2a4ee1b409f575678714fc95298f90849265ca314d04935ce
+test:
+    metadata:
+        name: chatgpt-swift-bypass-project-settings-20261014
+        platform: ios
+    build:
+        name: ChatGPT Swift Demo 20261014
+    blocks:
+        - type: validation
+          step_description: The app opens directly to the Ask ChatGPT chat screen without onboarding or a Sign up button. The auth bypass has produced a signed-in session.
+        - type: instructions
+          step_description: Open the sidebar, choose New project, enter Design Lab as the project name, then tap Create project.
+        - type: validation
+          step_description: The Design Lab project screen is visible with Chats and Sources tabs and the Message Design Lab composer.
+        - type: instructions
+          step_description: Open the project menu at the top right, choose Edit instructions, enter Respond in English and explain concepts simply, and Save.
+        - type: instructions
+          step_description: Open Edit instructions again.
+        - type: validation
+          step_description: The saved instructions Respond in English and explain concepts simply are displayed.
+        - type: instructions
+          step_description: Close instructions. Open Sources, tap Add, enter Design Notes as the title and Make the interface clear and accessible as the text, then Save.
+        - type: validation
+          step_description: Design Notes.txt appears in the project Sources list.
+        - type: instructions
+          step_description: Open the sidebar and tap the profile avatar to open Settings. Open Edit profile, change the name to Alex Morgan, and Save profile.
+        - type: validation
+          step_description: Settings displays Alex Morgan as the profile name.
+        - type: instructions
+          step_description: Scroll Settings to Appearance and select Dark.
+        - type: validation
+          step_description: Settings uses a dark background and Appearance is set to Dark.
+        - type: instructions
+          step_description: Set Appearance back to Light and close Settings. Open Design Lab from the sidebar.
+        - type: validation
+          step_description: Design Lab remains available and the app is in light appearance.

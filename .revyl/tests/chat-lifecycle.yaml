@@ -1,0 +1,35 @@
+# Revyl Test Definition
+
+_meta:
+    remote_id: 57ef2d63-731b-4cdc-a05f-887b53441c48
+    remote_version: 1
+    local_version: 1
+    last_synced_at: "2026-10-14T15:42:53-07:00"
+    checksum: 382f0308589040e974bb450fc313baeffd84c266bf5c978e2855a9f34dbe3d1b
+test:
+    metadata:
+        name: chatgpt-swift-chat-lifecycle-20261014
+        platform: ios
+    build:
+        name: ChatGPT Swift Demo 20261014
+    blocks:
+        - type: instructions
+          step_description: Open the sidebar and open Cafe Mocha Recipe. Use the top-right chat menu to Archive the chat and confirm Archive.
+        - type: instructions
+          step_description: Open the sidebar, open Settings using the profile avatar, scroll to Archived chats, and open it.
+        - type: validation
+          step_description: Cafe Mocha Recipe appears in Archived chats.
+        - type: instructions
+          step_description: Tap Cafe Mocha Recipe and choose Unarchive. Close Settings and view the sidebar.
+        - type: validation
+          step_description: Cafe Mocha Recipe is back in the sidebar Recents.
+        - type: instructions
+          step_description: Start a new chat using the Chat button. Tap Temporary chat at the top right, then Continue. Send Secret temporary note.
+        - type: instructions
+          step_description: Open the sidebar.
+        - type: validation
+          step_description: Secret temporary note does not appear in Recents; Cafe Mocha Recipe is still present.
+        - type: instructions
+          step_description: Start a new chat and tap Voice mode beside the composer. Choose a voice, then Get started and End voice chat.
+        - type: validation
+          step_description: A chat response about UI/UX is visible after the simulated voice conversation ends.
