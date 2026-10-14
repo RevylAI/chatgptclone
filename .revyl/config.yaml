@@ -2,6 +2,8 @@ project:
     id: a063849f-2bb7-4261-bd72-21edee158068
 session:
     idle_timeout_seconds: 1800
+    auth_bypass:
+        launch_vars: [DEMO_AUTH_BYPASS, DEMO_SEED_DATA]
 build:
     framework: ios
     profiles:

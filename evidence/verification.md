@@ -39,3 +39,14 @@ All 384 Mobbin reference screens are available locally under `references/screens
 Eight model checks passed earlier in the session, before the direct-device-only request (`model-checks.txt`). They were not rerun and are not evidence of a completed cloud test suite. Historical test definitions remain in `.revyl/tests/`; this workflow does not run them.
 
 These observations were captured before public repository publication. The original workspace was retained during migration.
+
+
+## Automatic session authentication
+
+Created organization launch variables `DEMO_AUTH_BYPASS=1` and `DEMO_SEED_DATA=1`, and attached their names under `session.auth_bypass.launch_vars` in `.revyl/config.yaml`. The app already reads these as environment values or iOS `-KEY value` argument pairs. No app code or build change was needed.
+
+Started fresh session `3e981afd-24f8-4d29-9e00-6e7f21a851c0` on artifact `3e2cf5ab-2dca-4c50-837b-91a420bb5a74` using the repo configuration, with no explicit launch variables and `--no-inherited-launch-vars`. Inspected `auth-config-home.png` and `auth-config-sidebar.png`: the app skipped onboarding/login, displayed the signed-in avatar, and showed both sample projects and conversations. No persisted tests or proof-of-changes runs were triggered.
+
+Revyl's [session preparation documentation](https://docs.revyl.com/cli/device/auth-and-session-prep) distinguishes the paths: CLI/proof agents can run `session.before_script`; GitHub preview links have no checkout and use stored organization launch variables. This demo uses static, non-secret mock-auth flags, so it needs neither a before script nor a deep link. The committed configuration supplies the shared launch-variable references for new preview/proof sessions; a full GitHub PR preview/proof run has not been exercised here. Existing sessions must be restarted to receive changed launch configuration.
+
+The verification device was stopped; `device info` confirmed terminal state `completed`.

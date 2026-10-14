@@ -19,7 +19,7 @@ Optional: change `DEMO_RESET_TOKEN` to reset local data. For manual login, use a
 
 ## Revyl
 
-Cloud builds and GitHub PR review are configured in [`.revyl/config.yaml`](.revyl/config.yaml). Proof of changes is enabled. Forks need their own Revyl project and GitHub connection.
+Cloud builds and GitHub PR review are configured in [`.revyl/config.yaml`](.revyl/config.yaml). Proof of changes is enabled. Previews and proof sessions attach `DEMO_AUTH_BYPASS=1` and `DEMO_SEED_DATA=1` from Revyl launch variables; no pre-script is needed for local mock auth. Forks need their own Revyl project, launch variables, and GitHub connection.
 
 [Verification notes](evidence/verification.md) · [Design reference](https://mobbin.com/apps/chat-gpt-ios-a96b7f4c-6bfa-4c9d-a6b7-562160feb391/a0b14f48-3d1c-4286-828b-e95ad04fef10/screens)
 
