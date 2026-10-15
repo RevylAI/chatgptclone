@@ -1,0 +1,23 @@
+baseline:
+compilation-cache:disabled reason=start_failed error=omni-cache is missing at /opt/revyl/bin/omni-cache
+
+arm64-1:
+compilation-cache:disabled reason=start_failed error=omni-cache is missing at /opt/revyl/bin/omni-cache
+
+no-index-1:
+compilation-cache:disabled reason=start_failed error=omni-cache is missing at /opt/revyl/bin/omni-cache
+
+wholemodule-1:
+compilation-cache:disabled reason=start_failed error=omni-cache is missing at /opt/revyl/bin/omni-cache
+
+cache-cold:
+compilation-cache:enabled systems=xcode
+cache:restore hits=0 misses=1 bytes=0 duration_ms=318
+
+cache-warm-1:
+compilation-cache:disabled reason=start_failed error=omni-cache is missing at /opt/revyl/bin/omni-cache
+cache:restore hits=1 misses=0 bytes=28901065 duration_ms=1993
+
+cache-warm-2:
+compilation-cache:disabled reason=start_failed error=omni-cache is missing at /opt/revyl/bin/omni-cache
+cache:restore hits=1 misses=0 bytes=57965291 duration_ms=2376
