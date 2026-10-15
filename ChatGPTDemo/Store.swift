@@ -14,6 +14,33 @@ struct Conversation: Codable, Identifiable, Equatable {
     var archived = false
     var projectID: UUID? = nil
 }
+
+struct ChatSearchResult: Identifiable {
+    let conversation: Conversation
+    let snippet: String
+    var id: UUID { conversation.id }
+}
+
+extension Conversation {
+    /// Search saved, active conversations without storing a second copy of their content.
+    func searchResult(for query: String) -> ChatSearchResult? {
+        guard !archived else { return nil }
+        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        func match(in text: String) -> Range<String.Index>? {
+            text.range(of: query, options: [.caseInsensitive, .diacriticInsensitive])
+        }
+        let matchingMessage = query.isEmpty ? nil : messages.first { match(in: $0.text) != nil }
+        guard query.isEmpty || match(in: title) != nil || matchingMessage != nil else { return nil }
+        let source = matchingMessage?.text ?? messages.last?.text ?? "No messages yet"
+        let text = source.split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
+        // Keep the matched phrase visible even when it occurs deep inside a long reply.
+        let range = query.isEmpty ? nil : match(in: text)
+        let start = range.map { text.index($0.lowerBound, offsetBy: -45, limitedBy: text.startIndex) ?? text.startIndex } ?? text.startIndex
+        let end = text.index(start, offsetBy: max(160, query.count + 45), limitedBy: text.endIndex) ?? text.endIndex
+        let snippet = (start == text.startIndex ? "" : "…") + String(text[start..<end]) + (end == text.endIndex ? "" : "…")
+        return ChatSearchResult(conversation: self, snippet: snippet)
+    }
+}
 struct Project: Codable, Identifiable, Equatable {
     var id = UUID()
     var name: String
@@ -96,6 +123,9 @@ struct LaunchOptions {
     var currentChat: Conversation? { state.conversations.first { $0.id == selectedChat } }
     var project: Project? { state.projects.first { $0.id == selectedProject } }
     var messages: [Message] { temporary ? temporaryMessages : currentChat?.messages ?? [] }
+    func searchChats(_ query: String) -> [ChatSearchResult] {
+        state.conversations.compactMap { $0.searchResult(for: query) }
+    }
     var theme: ColorScheme? { state.appearance == "Dark" ? .dark : state.appearance == "Light" ? .light : nil }
     var initials: String { state.name.split(separator: " ").prefix(2).compactMap(\.first).map(String.init).joined() }
     func save() { if let data = try? JSONEncoder().encode(state) { defaults.set(data, forKey: "state") } }

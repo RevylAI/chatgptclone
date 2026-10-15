@@ -111,12 +111,32 @@ struct SidebarView:View {
     @State var searching=false
     @State var renamed:UUID?
     @State var title=""
-    var chats:[Conversation] {store.state.conversations.filter{!$0.archived && (search.isEmpty || $0.title.localizedCaseInsensitiveContains(search))}}
+    @FocusState private var searchFocused: Bool
+    private var query: String { search.trimmingCharacters(in: .whitespacesAndNewlines) }
+    private var results: [ChatSearchResult] { store.searchChats(searching ? query : "") }
     var body:some View {
         VStack(spacing:0){
             HStack{
-                if searching{Image(systemName:"magnifyingglass");TextField("Search",text:$search).accessibilityIdentifier("Search chats");Button{searching=false;search=""}label:{Image(systemName:"xmark")}.accessibilityLabel("Close search")}
-                else{Text("ChatGPT").font(.system(size:22,weight:.semibold));Spacer();RoundButton(symbol:"magnifyingglass",label:"Search chats"){searching=true};Button{modal=store.state.signedIn ? "settings":"auth"}label:{Avatar(initials:store.state.signedIn ? store.initials:"",size:30)}.buttonStyle(.plain).accessibilityLabel(store.state.signedIn ? "Settings":"Log in")}
+                if searching {
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                        TextField("Search chats", text: $search)
+                            .focused($searchFocused)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .submitLabel(.search)
+                            .onSubmit { searchFocused = false }
+                            .accessibilityIdentifier("Search chats")
+                        if !search.isEmpty {
+                            Button { search = ""; searchFocused = true } label: {
+                                Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
+                            }.accessibilityLabel("Clear search")
+                        }
+                    }.padding(10).background(secondaryColor, in: RoundedRectangle(cornerRadius: 12))
+                    Button("Cancel") { searching = false; search = ""; searchFocused = false }
+                        .accessibilityLabel("Close search")
+                }
+                else{Text("ChatGPT").font(.system(size:22,weight:.semibold));Spacer();RoundButton(symbol:"magnifyingglass",label:"Search chats"){searching=true;searchFocused=true};Button{modal=store.state.signedIn ? "settings":"auth"}label:{Avatar(initials:store.state.signedIn ? store.initials:"",size:30)}.buttonStyle(.plain).accessibilityLabel(store.state.signedIn ? "Settings":"Log in")}
             }.padding(.horizontal,24).frame(height:54).padding(.top,4)
             ScrollView{
                 VStack(alignment:.leading,spacing:0){
@@ -125,13 +145,41 @@ struct SidebarView:View {
                         sideRow("square.grid.2x2","Apps"){store.notice("Connected services are mocked in this demo")}
                         Text("Projects").font(.system(size:16,weight:.semibold)).padding(.top,30).padding(.bottom,14)
                         sideRow("folder.badge.plus","New project"){modal=store.state.signedIn ? "project":"auth"}
+                        ForEach(store.state.projects){p in sideRow(p.symbol,p.name,color:namedColor(p.color)){store.selectedProject=p.id;store.selectedChat=nil;store.sidebar=false;store.destination="chat"}}
                     }
-                    ForEach(store.state.projects.filter{search.isEmpty || $0.name.localizedCaseInsensitiveContains(search)}){p in sideRow(p.symbol,p.name,color:namedColor(p.color)){store.selectedProject=p.id;store.selectedChat=nil;store.sidebar=false;store.destination="chat"}}
-                    if !chats.isEmpty {Text("Recents").font(.system(size:16,weight:.semibold)).padding(.top,28).padding(.bottom,14)}
-                    ForEach(chats){chat in Button{store.open(chat)}label:{Text(chat.title).font(.system(size:17)).frame(maxWidth:.infinity,alignment:.leading).padding(.vertical,14).contentShape(Rectangle())}.buttonStyle(.plain).contextMenu{Button("Rename"){renamed=chat.id;title=chat.title};Button("Archive"){store.archive(chat.id)};Button("Delete",role:.destructive){store.deleteChat(chat.id)}}}
+                    if !results.isEmpty {
+                        Text(searching && !query.isEmpty ? "\(results.count) \(results.count == 1 ? "result" : "results")" : "Recents")
+                            .font(.system(size:16,weight:.semibold)).padding(.top,28).padding(.bottom,14)
+                    }
+                    ForEach(results) { result in
+                        let chat = result.conversation
+                        Button { searchFocused = false; store.open(chat) } label: {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(chat.title).font(.system(size:17)).lineLimit(searching ? 2 : 1)
+                                if searching {
+                                    Text(result.snippet).font(.system(size:14)).foregroundStyle(.secondary).lineLimit(3)
+                                }
+                            }.frame(maxWidth:.infinity,alignment:.leading).padding(.vertical,14).contentShape(Rectangle())
+                        }.buttonStyle(.plain)
+                            .accessibilityIdentifier("Chat result \(chat.id)")
+                            .contextMenu {
+                                Button("Rename"){renamed=chat.id;title=chat.title}
+                                Button("Archive"){store.archive(chat.id)}
+                                Button("Delete",role:.destructive){store.deleteChat(chat.id)}
+                            }
+                    }
+                    if results.isEmpty {
+                        VStack(spacing: 12) {
+                            Image(systemName: searching && !query.isEmpty ? "magnifyingglass" : "bubble.left.and.bubble.right")
+                                .font(.system(size:28)).foregroundStyle(.secondary)
+                            Text(searching && !query.isEmpty ? "No chats found" : "No saved chats yet")
+                                .font(.system(size:19,weight:.semibold))
+                            Text(searching && !query.isEmpty ? "Try a different title or a phrase from a message." : "Once you start chatting, your conversations will appear here.")
+                                .font(.system(size:15)).foregroundStyle(.secondary)
+                        }.multilineTextAlignment(.center).frame(maxWidth:.infinity).padding(.vertical,48)
+                    }
                 }.padding(.horizontal,24)
-            }
-            if chats.isEmpty && store.state.projects.isEmpty {Text(searching ? "No results":"Once you start chatting, your\nconversations will appear here.").font(.system(size:17)).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxHeight:.infinity)}
+            }.scrollDismissesKeyboard(.interactively)
             HStack{Spacer();Button{store.newChat()}label:{Label("Chat",systemImage:"square.and.pencil").font(.system(size:17,weight:.semibold)).foregroundStyle(pageColor).padding(.horizontal,23).padding(.vertical,16).background(Color.primary,in:Capsule()).shadow(color:.black.opacity(0.15),radius:12,y:5)}.buttonStyle(.plain).accessibilityLabel("New chat")}.padding(.horizontal,24).padding(.bottom,-7)
         }.alert("Rename chat",isPresented:Binding(get:{renamed != nil},set:{if !$0{renamed=nil}})){TextField("Title",text:$title);Button("Cancel",role:.cancel){renamed=nil};Button("Save"){if let id=renamed{store.renameChat(id,title)};renamed=nil}}
     }
