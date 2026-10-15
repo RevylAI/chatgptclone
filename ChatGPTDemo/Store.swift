@@ -6,6 +6,7 @@ struct Message: Codable, Identifiable, Equatable {
     var text: String
     var isUser: Bool
     var image: String? = nil
+    var mode: String? = nil
 }
 struct Conversation: Codable, Identifiable, Equatable {
     var id = UUID()
@@ -137,7 +138,7 @@ struct LaunchOptions {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         let reply = Self.reply(text, mode: mode)
-        let pair = [Message(text:text,isUser:true), Message(text:reply,isUser:false,image:mode == "Image" ? "Coffee" : nil)]
+        let pair = [Message(text:text,isUser:true,mode:mode), Message(text:reply,isUser:false,image:mode == "Image" ? "Coffee" : nil)]
         if temporary { temporaryMessages += pair; return }
         if let i = state.conversations.firstIndex(where: {$0.id == selectedChat}) { state.conversations[i].messages += pair }
         else {
@@ -146,6 +147,27 @@ struct LaunchOptions {
             state.conversations.insert(chat,at:0); selectedChat = chat.id
         }
         save()
+    }
+    @discardableResult func editAndResend(_ messageID: UUID, text: String) -> Bool {
+        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let original = messages
+        guard !text.isEmpty,
+              let index = original.firstIndex(where: { $0.id == messageID && $0.isUser }) else { return false }
+        var edited = original[index]
+        // Older saved image prompts predate mode storage; infer it from their reply.
+        let mode = edited.mode ?? (original.indices.contains(index + 1) && original[index + 1].image != nil ? "Image" : "")
+        edited.text = text
+        edited.mode = mode
+        let reply = Message(text: Self.reply(text, mode: mode), isUser: false, image: mode == "Image" ? "Coffee" : nil)
+        let updated = Array(original.prefix(index)) + [edited, reply]
+        if temporary {
+            temporaryMessages = updated
+        } else {
+            guard let chatIndex = state.conversations.firstIndex(where: { $0.id == selectedChat }) else { return false }
+            state.conversations[chatIndex].messages = updated
+            save()
+        }
+        return true
     }
     func archive(_ id: UUID) { if let i=state.conversations.firstIndex(where:{$0.id==id}) { state.conversations[i].archived = true }; if selectedChat == id { newChat() };save() }
     func unarchive(_ id: UUID) { if let i=state.conversations.firstIndex(where:{$0.id==id}) { state.conversations[i].archived = false }; save() }

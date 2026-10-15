@@ -12,6 +12,7 @@ struct ChatView:View {
     @State var projectEdit=false
     @State var projectInstructions=false
     @State var sourceSheet: SourceSheet?
+    @State private var editingMessage: Message?
     @State var projectTab="Chats"
     @State var projectDelete=false
     @FocusState var focused:Bool
@@ -28,7 +29,7 @@ struct ChatView:View {
                 ScrollViewReader{proxy in
                     ScrollView{LazyVStack(alignment:.leading,spacing:26){ForEach(store.messages){message in messageView(message)};Color.clear.frame(height:10).id("bottom")}.padding(.horizontal,16).padding(.top,18)}
                         .scrollDismissesKeyboard(.interactively)
-                        .onChange(of:store.messages.count){_,_ in withAnimation{proxy.scrollTo("bottom",anchor:.bottom)}}
+                        .onChange(of:store.messages.last?.id){_,_ in withAnimation{proxy.scrollTo("bottom",anchor:.bottom)}}
                 }
             }
             composer.padding(.horizontal,32).padding(.top,14).padding(.bottom,0)
@@ -41,6 +42,7 @@ struct ChatView:View {
         .sheet(isPresented:$projectEdit){ProjectEditor(existing:store.project)}
         .sheet(isPresented:$projectInstructions){ProjectInstructions() .presentationDetents([.medium])}
         .sheet(item:$sourceSheet){sheet in SourceEditor(existing:sheet.filename)}
+        .sheet(item:$editingMessage){message in MessageEditor(message:message)}
     }
     var header:some View {
         HStack {
@@ -79,7 +81,19 @@ struct ChatView:View {
     }
     func messageView(_ message:Message)->some View {
         VStack(alignment:.leading,spacing:15){
-            if message.isUser {HStack{Spacer(minLength:55);Text(message.text).font(.system(size:17)).padding(14).background(secondaryColor,in:RoundedRectangle(cornerRadius:22))}}
+            if message.isUser {
+                HStack {
+                    Spacer(minLength:55)
+                    VStack(alignment:.trailing,spacing:4) {
+                        Text(message.text).font(.system(size:17)).padding(14).background(secondaryColor,in:RoundedRectangle(cornerRadius:22))
+                        Button { focused=false; editingMessage=message } label: {
+                            Label("Edit",systemImage:"pencil").font(.system(size:13)).foregroundStyle(.secondary)
+                                .padding(.horizontal,8).frame(minHeight:32)
+                        }.buttonStyle(.plain).accessibilityLabel("Edit message")
+                            .accessibilityIdentifier("Edit message \(message.id)")
+                    }
+                }
+            }
             else {
                 Text(.init(message.text)).font(.system(size:17)).lineSpacing(6).textSelection(.enabled).fixedSize(horizontal:false,vertical:true)
                 if let image=message.image {Image(image).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius:18))}
@@ -101,6 +115,50 @@ struct ChatView:View {
                 else {Button{sourceSheet=SourceSheet(nil)}label:{Label("Add sources",systemImage:"plus")}.buttonStyle(.plain);ForEach(store.project?.sources ?? [],id:\.self){s in HStack{Image(systemName:"doc.text").foregroundStyle(.blue);Button(s){sourceSheet=SourceSheet(s)}.buttonStyle(.plain);Spacer();Button{store.removeSource(s)}label:{Image(systemName:"trash").foregroundStyle(.secondary)}.accessibilityLabel("Remove \(s)")}};Spacer()}
             }
         }.padding(.horizontal,24)
+    }
+}
+
+struct MessageEditor: View {
+    @EnvironmentObject private var store: Store
+    @Environment(\.dismiss) private var dismiss
+    @State private var text: String
+    @State private var error: String?
+    @FocusState private var focused: Bool
+    let message: Message
+
+    init(message: Message) {
+        self.message = message
+        _text = State(initialValue: message.text)
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Update your prompt")
+                    .font(.system(size:22,weight:.semibold))
+                Text("Resending replaces the reply and any messages that follow.")
+                    .font(.system(size:15)).foregroundStyle(.secondary)
+                TextEditor(text:$text)
+                    .font(.system(size:17)).focused($focused)
+                    .scrollContentBackground(.hidden)
+                    .padding(12).background(secondaryColor,in:RoundedRectangle(cornerRadius:16))
+                    .accessibilityLabel("Edit prompt").accessibilityIdentifier("Edit prompt")
+                if let error { Text(error).font(.system(size:14)).foregroundStyle(.red) }
+            }.padding(20).background(pageColor)
+                .navigationTitle("Edit message").navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement:.cancellationAction) { Button("Cancel") { dismiss() } }
+                    ToolbarItem(placement:.confirmationAction) {
+                        Button("Resend") {
+                            if store.editAndResend(message.id,text:text) { dismiss() }
+                            else { error = "This message is no longer available. Close the editor and try again." }
+                        }.fontWeight(.semibold)
+                            .disabled(text.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty)
+                            .accessibilityIdentifier("Resend message")
+                    }
+                }
+                .onAppear { focused=true }
+        }.presentationDetents([.large])
     }
 }
 
