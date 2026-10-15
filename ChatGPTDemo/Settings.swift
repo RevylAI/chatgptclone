@@ -72,7 +72,24 @@ struct SettingsView:View {
     }}
     var dataControls:some View{Group{GroupCard{toggle("Improve the model for everyone","sparkles",$store.state.improveModel)};Text("This demo stores conversations on this device. No data is sent to an AI service.").font(.system(size:14)).foregroundStyle(.secondary);GroupCard{SettingRow(symbol:"archivebox",title:"Archive all chats",chevron:false){for c in store.state.conversations{store.archive(c.id)};store.notice("All chats archived")}}}}
     var notifications:some View{Group{Text("Notifications").font(.system(size:20,weight:.semibold));Text("Notification delivery is mocked in this demo.").foregroundStyle(.secondary)}}
-    var security:some View{Group{sectionLabel("Multi-factor authentication (MFA)");GroupCard{SettingRow(symbol:"key",title:"Authenticator app",detail:"Off"){store.notice("Authentication is local in this demo")};RowDivider();SettingRow(symbol:"bell",title:"Push notifications",detail:"Off"){store.notice("Authentication is local in this demo")}}}}
+    var security: some View {
+        Group {
+            Text("Multi-factor authentication (MFA)")
+                .font(.system(size: 16))
+                .foregroundStyle(.blue)
+                .padding(.leading, 16)
+                .padding(.bottom, -14)
+            GroupCard {
+                SettingRow(symbol: "key", title: "Authenticator app", detail: "Off") {
+                    store.notice("Authentication is local in this demo")
+                }
+                RowDivider()
+                SettingRow(symbol: "bell", title: "Push notification", detail: "Off") {
+                    store.notice("Authentication is local in this demo")
+                }
+            }
+        }
+    }
     var archived:some View{VStack{let chats=store.state.conversations.filter(\.archived);if chats.isEmpty{Spacer();EmptyState(symbol:"archivebox",title:"No archived chats",subtitle:"Archived conversations will be available here.");Spacer()}else{ScrollView{VStack(alignment:.leading,spacing:10){Text("Today").font(.system(size:13)).foregroundStyle(.secondary);ForEach(chats){chat in Menu{Button("View"){store.open(chat);dismiss()};Button("Unarchive"){store.unarchive(chat.id)};Button("Delete",role:.destructive){store.deleteChat(chat.id)}}label:{Text(chat.title).foregroundStyle(.primary).frame(maxWidth:.infinity,alignment:.leading).padding(.vertical,18)}.accessibilityLabel(chat.title)}}.padding(24)}}}}
 }
 struct ProfileEditor:View{
