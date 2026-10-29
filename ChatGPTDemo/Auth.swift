@@ -1,19 +1,165 @@
 import SwiftUI
 struct WelcomeView:View {
-    @EnvironmentObject var store:Store
-    var body:some View {
-        VStack(alignment:.leading,spacing:0) {
-            Text("Welcome to ChatGPT").font(.system(size:32,weight:.bold)).minimumScaleFactor(0.8).lineLimit(1).padding(.top,54)
-            Text("ChatGPT is a free AI assistant that can help you with a wide variety of tasks.").font(.system(size:17)).foregroundStyle(.secondary).padding(.top,23).padding(.bottom,40)
-            info("flag","Responses can be inaccurate","ChatGPT may provide inaccurate information about people, places, or facts.")
-            info("lock","Don’t share sensitive info","Chats may be reviewed and used for training. Learn more about your choices")
-            info("gearshape.fill","Control your chat history","Decide whether new chats on this device will appear in your history and be used to improve our systems.")
-            Spacer(minLength:20)
-            PrimaryButton(title:"Continue"){store.state.welcomed=true;store.save()}
-            Text("By continuing, you agree to our **Terms** and have read our **Privacy Policy**.").font(.system(size:15)).foregroundStyle(.secondary).multilineTextAlignment(.center).padding(.top,24).padding(.bottom,20)
-        }.padding(.horizontal,24)
+    @EnvironmentObject private var store:Store
+    @State private var step = 0
+    @State private var selected: Set<String> = ["Learn something"]
+    private let ink = Color(red:21/255,green:21/255,blue:21/255)
+    private let red = Color(red:231/255,green:45/255,blue:67/255)
+    private let muted = Color(red:98/255,green:98/255,blue:98/255)
+    private let interests = [
+        ("Learn something", "Study buddies, minus the group chat", "book.closed"),
+        ("Make something", "Stories, sketches, and bright ideas", "sparkle"),
+        ("Build something", "Code, plans, and side projects", "chevron.left.forwardslash.chevron.right"),
+        ("Figure life out", "A little clarity for the everyday", "asterisk")
+    ]
+    private var prompt: String {
+        if selected.contains("Learn something") || selected.isEmpty { return "Explain a tricky idea like I’m new to it." }
+        if selected.contains("Make something") { return "Help me turn a story idea into a first draft." }
+        if selected.contains("Build something") { return "Help me break a side project into small steps." }
+        return "Help me make a simple plan for my week."
     }
-    func info(_ icon:String,_ title:String,_ description:String)->some View {HStack(alignment:.top,spacing:22){Image(systemName:icon).font(.system(size:28)).frame(width:30);VStack(alignment:.leading,spacing:3){Text(title).font(.system(size:17,weight:.semibold));Text(description).font(.system(size:17)).foregroundStyle(.secondary).fixedSize(horizontal:false,vertical:true)}}.padding(.bottom,28)}
+    var body: some View {
+        VStack(spacing:0) {
+            navigation
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment:.leading,spacing:0) {
+                        Color.clear.frame(height:0).id("onboarding-top")
+                        if step == 0 { welcome }
+                        else if step == 1 { choices }
+                        else { firstPrompt }
+                    }.padding(.horizontal,24).padding(.bottom,8)
+                }.scrollIndicators(.hidden)
+                    .onChange(of:step) { _,_ in proxy.scrollTo("onboarding-top",anchor:.top) }
+            }
+            footer
+        }
+        .background(Color.white.ignoresSafeArea())
+        .foregroundStyle(ink)
+        .preferredColorScheme(.light)
+        .onAppear { if let saved = store.state.onboardingInterests { selected = Set(saved) } }
+    }
+    private func display(_ size: CGFloat) -> Font {
+        .custom("SpaceGrotesk-Light",size:size,relativeTo:.largeTitle).weight(.bold)
+    }
+    private func eyebrow(_ text:String) -> some View {
+        Text(text).font(.system(size:12,weight:.bold)).tracking(1.1).foregroundStyle(red)
+    }
+    private var navigation: some View {
+        HStack(spacing:9) {
+            if step > 0 {
+                Button { step -= 1 } label: {
+                    Image(systemName:"chevron.left").font(.system(size:18,weight:.medium)).frame(width:24,height:44)
+                }.accessibilityLabel("Back").accessibilityIdentifier("Onboarding back")
+            }
+            Text("ChatGPT").font(display(18))
+            Spacer()
+            if step < 2 {
+                Button("Skip") {
+                    if step == 0 { store.completeOnboarding(interests:[],prompt:nil) }
+                    else { selected = []; step = 2 }
+                }.font(.system(size:14,weight:.medium)).foregroundStyle(muted).frame(minWidth:44,minHeight:44)
+                    .accessibilityIdentifier("Onboarding skip")
+            } else {
+                Text("03 / 03").font(.system(size:14)).foregroundStyle(muted)
+            }
+        }.buttonStyle(.plain).padding(.horizontal,24).frame(height:48)
+    }
+    private var welcome: some View {
+        VStack(alignment:.leading,spacing:0) {
+            ZStack(alignment:.topLeading) {
+                Image("MangaSidekick").resizable().scaledToFit()
+                GeometryReader { geometry in
+                    Text("HEY, YOU!").font(display(14)).minimumScaleFactor(0.7).lineLimit(1)
+                        .frame(width:geometry.size.width * 0.19,height:20)
+                        .position(x:geometry.size.width * 0.80,y:geometry.size.height * 0.28)
+                }
+            }.aspectRatio(342/258,contentMode:.fit).padding(.top,15).accessibilityHidden(true)
+            eyebrow("YOUR AI SIDEKICK. YOUR NEXT CHAPTER.").font(.system(size:11)).padding(.top,22)
+            Text("YOUR NEXT ARC\nSTARTS HERE.").font(display(46)).tracking(-2.4).lineSpacing(-3)
+                .fixedSize(horizontal:false,vertical:true).padding(.top,12).accessibilityAddTraits(.isHeader)
+            Text("Dream it. Ask it. Figure it out.\nMeet ChatGPT, a little help for your big ideas.")
+                .font(.system(size:16)).foregroundStyle(muted).lineSpacing(4).fixedSize(horizontal:false,vertical:true).padding(.top,12)
+        }
+    }
+    private var choices: some View {
+        VStack(alignment:.leading,spacing:0) {
+            eyebrow("CHAPTER 01 / MAKE IT YOURS").padding(.top,35)
+            Text("CHOOSE YOUR\nSIDE QUEST.").font(display(42)).tracking(-1.9).lineSpacing(-2)
+                .fixedSize(horizontal:false,vertical:true).padding(.top,16).accessibilityAddTraits(.isHeader)
+            Text("What would you like a little help with?").font(.system(size:16)).foregroundStyle(muted).padding(.top,16)
+            VStack(spacing:12) {
+                ForEach(interests,id:\.0) { title,subtitle,symbol in
+                    Button {
+                        if selected.contains(title) { selected.remove(title) } else { selected.insert(title) }
+                    } label: {
+                        HStack(spacing:14) {
+                            Image(systemName:symbol).font(.system(size:21)).frame(width:24)
+                            VStack(alignment:.leading,spacing:4) {
+                                Text(title).font(.system(size:17,weight:.semibold))
+                                Text(subtitle).font(.system(size:12)).opacity(0.8).fixedSize(horizontal:false,vertical:true)
+                            }.frame(maxWidth:.infinity,alignment:.leading)
+                            ZStack {
+                                Rectangle().fill(selected.contains(title) ? red : Color.white)
+                                Rectangle().strokeBorder(selected.contains(title) ? red : ink,lineWidth:1.5)
+                                if selected.contains(title) { Image(systemName:"checkmark").font(.system(size:12,weight:.bold)).foregroundStyle(.white) }
+                            }.frame(width:21,height:21)
+                        }.padding(.horizontal,16).padding(.vertical,12).frame(maxWidth:.infinity,minHeight:64,alignment:.leading)
+                            .foregroundStyle(selected.contains(title) ? Color.white : ink)
+                            .background(selected.contains(title) ? ink : .white)
+                            .overlay(Rectangle().strokeBorder(ink,lineWidth:2))
+                            .background(ink.opacity(0.1).offset(x:3,y:3))
+                    }.buttonStyle(.plain).accessibilityLabel(title).accessibilityValue(selected.contains(title) ? "Selected" : "Not selected")
+                        .accessibilityAddTraits(selected.contains(title) ? [.isSelected] : [])
+                        .accessibilityIdentifier("Interest: \(title)")
+                }
+            }.padding(.top,28).padding(.trailing,3)
+        }
+    }
+    private var firstPrompt: some View {
+        VStack(alignment:.leading,spacing:0) {
+            eyebrow("CHAPTER 02 / THE FIRST SPARK").padding(.top,35)
+            Text("EVERY BIG IDEA\nSTARTS SMALL.").font(display(44)).tracking(-2.2).lineSpacing(-2)
+                .fixedSize(horizontal:false,vertical:true).padding(.top,16).accessibilityAddTraits(.isHeader)
+            Text("You don’t need the perfect question.\nTry this one to get going.").font(.system(size:16)).foregroundStyle(muted).lineSpacing(4).padding(.top,16)
+            VStack(alignment:.leading,spacing:18) {
+                eyebrow("TRY ASKING")
+                Text("“\(prompt)”").font(display(25)).tracking(-0.6).fixedSize(horizontal:false,vertical:true)
+                HStack(spacing:10) {
+                    Text("AI").font(.system(size:12,weight:.bold)).foregroundStyle(.white).frame(width:26,height:26).background(ink)
+                    Text("A fresh perspective is one message away.").font(.system(size:14)).foregroundStyle(muted)
+                }
+            }.padding(20).frame(maxWidth:.infinity,minHeight:218,alignment:.topLeading)
+                .background(Color.white).overlay(Rectangle().strokeBorder(ink,lineWidth:3))
+                .background(ink.offset(x:5,y:5)).padding(.trailing,5).padding(.top,34)
+                .accessibilityIdentifier("First prompt preview")
+        }
+    }
+    private var footer: some View {
+        VStack(alignment:.leading,spacing:0) {
+            HStack(spacing:6) {
+                ForEach(0..<3) { index in Rectangle().fill(index == step ? red : Color(white:0.91)).frame(width:32,height:4) }
+            }.accessibilityElement(children:.ignore).accessibilityLabel("Step \(step+1) of 3").padding(.bottom,26)
+            Button {
+                if step < 2 { step += 1 }
+                else { store.completeOnboarding(interests:interests.map(\.0).filter { selected.contains($0) },prompt:prompt) }
+            } label: {
+                HStack {
+                    Text(["Let’s begin","Continue","Start chatting"][step]).font(display(17))
+                    Spacer()
+                    Image(systemName:"arrow.right").font(.system(size:20,weight:.medium))
+                }.foregroundStyle(.white).padding(.horizontal,20).frame(height:56).background(red)
+                    .overlay(Rectangle().strokeBorder(ink,lineWidth:2)).background(ink.offset(x:4,y:4))
+            }.buttonStyle(.plain).accessibilityIdentifier("Onboarding primary action").padding(.trailing,4).padding(.bottom,14)
+            Group {
+                if step == 0 {
+                    Text("By continuing, you agree to the [Terms](https://openai.com/policies/terms-of-use/)\nand acknowledge the [Privacy Policy](https://openai.com/policies/privacy-policy/).")
+                } else if step == 1 { Text("Pick a few. There’s no wrong answer.") }
+                else { Text("AI can make mistakes.\nCheck important information.") }
+            }.font(.system(size:11)).foregroundStyle(muted).tint(muted).multilineTextAlignment(.center)
+                .frame(maxWidth:.infinity,minHeight:32)
+        }.padding(.horizontal,24).padding(.top,20)
+    }
 }
 struct AuthView:View {
     @EnvironmentObject var store:Store

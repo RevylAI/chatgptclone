@@ -53,6 +53,7 @@ struct Project: Codable, Identifiable, Equatable {
 }
 struct LocalState: Codable {
     var welcomed = false
+    var onboardingInterests: [String]? = nil
     var signedIn = false
     var name = "Alex Smith"
     var email = "alex@example.com"
@@ -100,6 +101,7 @@ struct LaunchOptions {
     @Published var temporary = false
     @Published var temporaryMessages: [Message] = []
     @Published var toast: String?
+    @Published var onboardingPrompt = ""
     let defaults: UserDefaults
     init(defaults: UserDefaults = .standard, options: LaunchOptions = LaunchOptions()) {
         self.defaults = defaults
@@ -114,7 +116,8 @@ struct LaunchOptions {
             state.conversations = [Conversation(title: "Cafe Mocha Recipe", messages: [Message(text: "Help me create a cafe mocha recipe", isUser: true), Message(text: Self.coffeeReply, isUser: false)], projectID: state.projects[0].id), Conversation(title: "Test Confirmation", messages: [Message(text:"Hello",isUser:true),Message(text:"Hey there! What’s on your mind today?",isUser:false)])]
         }
         if let screen = options.screen {
-            if screen == "sidebar" { sidebar = true }
+            if screen == "onboarding" { state.welcomed = false }
+            else if screen == "sidebar" { sidebar = true }
             else if screen == "recipe" { selectedChat = state.conversations.first?.id }
             else if screen == "project" { selectedProject = state.projects.last?.id }
             else { destination = screen }
@@ -130,6 +133,13 @@ struct LaunchOptions {
     var theme: ColorScheme? { state.appearance == "Dark" ? .dark : state.appearance == "Light" ? .light : nil }
     var initials: String { state.name.split(separator: " ").prefix(2).compactMap(\.first).map(String.init).joined() }
     func save() { if let data = try? JSONEncoder().encode(state) { defaults.set(data, forKey: "state") } }
+    func completeOnboarding(interests: [String], prompt: String?) {
+        state.onboardingInterests = interests
+        state.welcomed = true
+        newChat()
+        onboardingPrompt = prompt ?? ""
+        save()
+    }
     func signIn(email: String, name: String? = nil) { state.signedIn = true; state.welcomed = true; state.email = email; if let name, !name.isEmpty { state.name = name }; save() }
     func signOut() { state.signedIn = false; selectedChat = nil; selectedProject = nil; sidebar = false; destination = "chat"; save() }
     func newChat() { selectedChat = nil; selectedProject = nil; temporary = false; temporaryMessages = []; destination = "chat"; sidebar = false }

@@ -18,6 +18,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ai.revyl.demo.chatgpt
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: ChatGPTDemo/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: ChatGPT Demo
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES

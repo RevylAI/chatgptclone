@@ -17,6 +17,10 @@ DEMO_SEED_DATA=1
 
 Optional: change `DEMO_RESET_TOKEN` to reset local data. For manual login, use any demo email, an 8+ character password, and code `123456`.
 
+First launch uses the three-step Manga Club onboarding: welcome, optional interests, and a suggested first prompt. Completing it saves the interests and opens chat with an editable draft; it never sends automatically. Skip on the welcome screen goes straight to an empty chat. Set `DEMO_SCREEN=onboarding` to replay the flow without deleting existing chats, including when auth bypass is enabled; remove that override to test normal relaunch persistence.
+
+The selected [Paper direction A](https://app.paper.design/file/01M64RXA97W2EZETN4BX62X8Y3/p-1-0) is saved in Revyl’s Files library as `895213b0-bc6a-4eb6-aa8f-e2ce3750aeb1`; behavior and verification context is `a9e3f872-6776-44de-a53b-5198471d5dc1`. The bundled Space Grotesk font is licensed under the SIL Open Font License in `ChatGPTDemo/SpaceGrotesk-OFL.txt`.
+
 ## Revyl
 
 Cloud builds and GitHub PR review are configured in [`.revyl/config.yaml`](.revyl/config.yaml). Proof of changes is enabled. Previews and proof sessions attach `DEMO_AUTH_BYPASS=1` and `DEMO_SEED_DATA=1` from Revyl launch variables; no pre-script is needed for local mock auth. Forks need their own Revyl project, launch variables, and GitHub connection.

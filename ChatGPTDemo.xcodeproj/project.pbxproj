@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A01100000000000000000001 /* SpaceGrotesk.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A01100000000000000000002 /* SpaceGrotesk.ttf */; };
+		A01100000000000000000003 /* SpaceGrotesk-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = A01100000000000000000004 /* SpaceGrotesk-OFL.txt */; };
+		A01100000000000000000005 /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01100000000000000000006 /* OnboardingTests.swift */; };
 		081D7896077EF3DC4ED865CA /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCAD80C8C627163A833A98B /* App.swift */; };
 		126DEE7A95B98C9B178FFBE8 /* Projects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB25789D945DEED5CA17F54 /* Projects.swift */; };
 		1E36AB782CD3D87F37F1B9D2 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3111FC9EBA1D44B576C72B20 /* Store.swift */; };
@@ -30,6 +33,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A01100000000000000000002 /* SpaceGrotesk.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = SpaceGrotesk.ttf; sourceTree = "<group>"; };
+		A01100000000000000000004 /* SpaceGrotesk-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SpaceGrotesk-OFL.txt"; sourceTree = "<group>"; };
+		A01100000000000000000006 /* OnboardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTests.swift; sourceTree = "<group>"; };
 		3111FC9EBA1D44B576C72B20 /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		3147140F58B21C10A16E244A /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		356A233D3D2E98C2ACD1EA6F /* StoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreTests.swift; sourceTree = "<group>"; };
@@ -66,6 +72,7 @@
 		49A146E29677CB4634DC3BB3 /* ChatGPTDemoTests */ = {
 			isa = PBXGroup;
 			children = (
+				A01100000000000000000006 /* OnboardingTests.swift */,
 				356A233D3D2E98C2ACD1EA6F /* StoreTests.swift */,
 			);
 			path = ChatGPTDemoTests;
@@ -74,6 +81,8 @@
 		B5FD5256FEA30F8D5771C37F /* ChatGPTDemo */ = {
 			isa = PBXGroup;
 			children = (
+				A01100000000000000000002 /* SpaceGrotesk.ttf */,
+				A01100000000000000000004 /* SpaceGrotesk-OFL.txt */,
 				ACCAD80C8C627163A833A98B /* App.swift */,
 				DBE09A2435E31BCC7ADD89A4 /* Assets.xcassets */,
 				3D9EF47E535EF563B0C65785 /* Auth.swift */,
@@ -162,6 +171,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A01100000000000000000001 /* SpaceGrotesk.ttf in Resources */,
+				A01100000000000000000003 /* SpaceGrotesk-OFL.txt in Resources */,
 				4A249E1A7AE69EF82400A6BA /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -173,6 +184,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A01100000000000000000005 /* OnboardingTests.swift in Sources */,
 				D05BB2D7224AF425CD8DF0DC /* StoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -210,6 +222,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChatGPTDemo/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "ChatGPT Demo";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -391,6 +404,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChatGPTDemo/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "ChatGPT Demo";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

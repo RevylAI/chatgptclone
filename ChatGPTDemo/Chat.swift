@@ -34,6 +34,12 @@ struct ChatView:View {
             }
             composer.padding(.horizontal,32).padding(.top,14).padding(.bottom,0)
         }.background(pageColor)
+        .onAppear {
+            if !store.onboardingPrompt.isEmpty {
+                draft = store.onboardingPrompt
+                store.onboardingPrompt = ""
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for:.demoMode)){note in if let m=note.object as? String {mode=m;focused=true}}
         .alert("Rename chat",isPresented:$showRename){TextField("Title",text:$rename);Button("Cancel",role:.cancel){};Button("Save"){if let id=store.selectedChat{store.renameChat(id,rename)}}}
         .alert("Archive Chat",isPresented:$confirmArchive){Button("Cancel",role:.cancel){};Button("Archive"){if let id=store.selectedChat{store.archive(id)}}}message:{Text("You can view this chat in Settings.")}
